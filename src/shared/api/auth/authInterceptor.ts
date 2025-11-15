@@ -19,7 +19,12 @@ export const attachAuthInterceptor = (api: ReturnType<typeof axios.create>) => {
     async (error) => {
       const originalRequest = error.config;
 
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      // Don't attempt token refresh for login or refresh endpoints
+      const isAuthEndpoint =
+        originalRequest.url?.includes('/users/login/') ||
+        originalRequest.url?.includes('/users/token/refresh/');
+
+      if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
         if (isRefreshing) {
           return new Promise((resolve) => {
             queue.push(() => resolve(api(originalRequest)));
@@ -31,7 +36,7 @@ export const attachAuthInterceptor = (api: ReturnType<typeof axios.create>) => {
 
         try {
           const { data } = await axios.post(
-            `${API_BASE_URL}/api/stores/refresh-token/`,
+            `${API_BASE_URL}/users/token/refresh/`,
             { refresh: localStorage.getItem("refreshToken") }
           );
 

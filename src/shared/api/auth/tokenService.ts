@@ -38,19 +38,14 @@ export const refreshTokens = async (): Promise<string | null> => {
   if (!refreshToken) return null;
 
   try {
-    const res = await api.post("/api/stores/refresh-token/", {
-      refreshToken,
+    const res = await api.post("/users/token/refresh/", {
+      refresh: refreshToken,
     });
-    const data = await res.data;
+    const data = res.data;
 
-    if (!data.ok) {
-      clearTokens();
-      return null;
-    }
-
-    setAccessToken(data.accessToken);
-    if (data.refreshToken) setRefreshToken(data.refreshToken);
-    return data.accessToken;
+    setAccessToken(data.access);
+    if (data.refresh) setRefreshToken(data.refresh);
+    return data.access;
   } catch {
     clearTokens();
     return null;

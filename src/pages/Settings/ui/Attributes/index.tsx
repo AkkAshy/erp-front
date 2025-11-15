@@ -99,14 +99,13 @@ const Attributes = () => {
     <div className={styles.attributes}>
       <div className={styles.header}>
         <h2>Атрибуты товаров</h2>
-        <DashedButton
-          title="Добавить атрибут"
-          onClick={() => setIsOpenCreate(true)}
-        />
+        <DashedButton onClick={() => setIsOpenCreate(true)}>
+          Добавить атрибут
+        </DashedButton>
       </div>
 
       <div className={styles.attributesList}>
-        {attributeTypes.data?.data.results.map((type) => (
+        {attributeTypes.data?.data?.results?.map((type: any) => (
           <div key={type.id} className={styles.attributeCard}>
             <div className={styles.attributeHeader}>
               <div className={styles.attributeTitleRow}>
@@ -139,12 +138,12 @@ const Attributes = () => {
                 <div className={styles.valuesList}>
                   {attributeValues.isLoading ? (
                     <div className={styles.loading}>Загрузка...</div>
-                  ) : attributeValues.data?.data.results.length === 0 ? (
+                  ) : !attributeValues.data?.data?.results || attributeValues.data.data.results.length === 0 ? (
                     <div className={styles.emptyValues}>
                       Нет значений. Добавьте первое значение
                     </div>
                   ) : (
-                    attributeValues.data?.data.results.map((value) => (
+                    attributeValues.data.data.results.map((value: any) => (
                       <div key={value.id} className={styles.valueItem}>
                         <div className={styles.valueInfo}>
                           <span className={styles.valueName}>{value.value}</span>
