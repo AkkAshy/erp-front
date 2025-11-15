@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { attributeApi } from "../api/attributeApi";
-import { AttributeValue } from "../api/types";
+import type { AttributeValue } from "../api/types";
 
 export const useUpdateAttributeValue = () => {
   const queryClient = useQueryClient();

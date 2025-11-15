@@ -47,7 +47,7 @@ const SelectAttributes: FC<Props> = ({
   useEffect(() => {
     if (attributeValuesData?.data?.results) {
       setAttributesData(
-        attributeValuesData.data.results.map((attr) => ({
+        attributeValuesData.data.results.map((attr: AttributeValue) => ({
           ...attr,
           selected:
             selectedAttributes.findIndex((s) => s.id === attr.id) !== -1,
