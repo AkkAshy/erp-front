@@ -10,31 +10,53 @@ interface AppSettingsState {
   }[];
 }
 
-const initialState: AppSettingsState = {
-  paymentMethods: localStorage.getItem("paymentMethods")
-    ? JSON.parse(localStorage.getItem("paymentMethods") as string)
-    : [
-        {
-          id: 1,
-          selected: false,
-          status: true,
-          method: "card",
-          label: "Terminal",
-        },
-        {
-          id: 2,
-          selected: false,
-          status: true,
-          method: "transfer",
-          label: "O’tkazma",
-        },
-        {
-          id: 3,
-          selected: true,
-          status: true,
-          method: "cash",
-          label: "Naqd pul",
-        },
+const defaultPaymentMethods = [
+  {
+    id: 1,
+    selected: false,
+    status: true,
+    method: "card",
+    label: "Terminal",
+  },
+  {
+    id: 2,
+    selected: false,
+    status: true,
+    method: "transfer",
+    label: "O'tkazma",
+  },
+  {
+    id: 3,
+    selected: true,
+    status: true,
+    method: "cash",
+    label: "Naqd pul",
+  },
+  {
+    id: 4,
+    selected: false,
+    status: true,
+    method: "hybrid",
+    label: "Gibrid",
+  },
+];
+
+const getInitialPaymentMethods = () => {
+  const stored = localStorage.getItem("paymentMethods");
+  if (!stored) {
+    return defaultPaymentMethods;
+  }
+
+  try {
+    const parsed = JSON.parse(stored);
+
+    // Check if hybrid method already exists
+    const hasHybrid = parsed.some((method: any) => method.method === "hybrid");
+
+    if (!hasHybrid) {
+      // Add hybrid method to existing methods
+      const updatedMethods = [
+        ...parsed,
         {
           id: 4,
           selected: false,
@@ -42,7 +64,20 @@ const initialState: AppSettingsState = {
           method: "hybrid",
           label: "Gibrid",
         },
-      ],
+      ];
+      // Save updated methods to localStorage
+      localStorage.setItem("paymentMethods", JSON.stringify(updatedMethods));
+      return updatedMethods;
+    }
+
+    return parsed;
+  } catch (error) {
+    return defaultPaymentMethods;
+  }
+};
+
+const initialState: AppSettingsState = {
+  paymentMethods: getInitialPaymentMethods(),
 };
 
 const appSettingsSlice = createSlice({
