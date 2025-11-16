@@ -26,10 +26,16 @@ export type Transaction = {
   previous: string | null;
   results: Results[];
 };
-//"cash" | "transfer" | "card" | "debt"
+//"cash" | "transfer" | "card" | "debt" | "hybrid"
+export type PaymentPart = {
+  method: "cash" | "card" | "transfer";
+  amount: number;
+};
+
 export type Sale = {
   cashier?: number;
   payment_method: string;
+  hybrid_payments?: PaymentPart[];
   new_customer?: { full_name: string; phone: string };
   customer?: number;
   total_amount?: number;

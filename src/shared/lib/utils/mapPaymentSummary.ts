@@ -9,8 +9,9 @@ export const mapPaymentSummary = (
     total: "Umumiy",
     card: "Karta",
     cash: "Naqd Pul",
-    transfer: "O’tkazma",
+    transfer: "O'tkazma",
     debt: "Qarz",
+    hybrid: "Gibrid",
   };
 
   const defaultValues: Record<string, number> = {
@@ -19,6 +20,7 @@ export const mapPaymentSummary = (
     cash: 0,
     transfer: 0,
     debt: 0,
+    hybrid: 0,
   };
 
   // Переносим реальные суммы в defaultValues

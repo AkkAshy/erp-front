@@ -5,6 +5,7 @@ import CreateModal from "@/shared/ui/CreateModal";
 
 import DeleteConfirmModal from "@/features/DeleteConfirmModal/ui";
 import { AddCustomerModal } from "@/features/AddCustomerModal";
+import { HybridPaymentModal, type PaymentPart } from "@/features/HybridPaymentModal";
 
 import { useFilteredCustomers } from "@/entities/customer/model/useFilteredCustomers";
 
@@ -19,6 +20,7 @@ import {
   CashIcon,
   DeleteIcon,
 } from "@/shared/ui/icons";
+import { HybridIcon } from "@/shared/ui/icons/payment";
 
 // scss
 import styles from "./Home.module.scss";
@@ -56,6 +58,8 @@ const Home = () => {
   const [isDeleteModal, setIsDeleteModal] = useState(false);
   const [isAddModal, setIsAddModal] = useState(false);
   const [isAlertSelect, setIsAlertSelect] = useState(false);
+  const [isHybridModalOpen, setIsHybridModalOpen] = useState(false);
+  const [hybridPayments, setHybridPayments] = useState<PaymentPart[]>([]);
   const [searchCustomer, setSearchCustomer] = useState("");
   const filteredCustomers = useFilteredCustomers({ q: searchCustomer });
   const paymentMethods = useSelector(
@@ -85,11 +89,17 @@ const Home = () => {
     [products]
   );
 
+  const totalAmount = useMemo(
+    () => products.reduce((acc, item) => acc + parseFloat(item.sale_price || "0") * (item.count ?? 1), 0),
+    [products]
+  );
+
   function clearData() {
     setSelectedCustomerId(0);
     setCustomerData({ full_name: "", phone: "" });
     setProducts([]);
     setScannedCode("");
+    setHybridPayments([]);
   }
 
   const handleDataById = () => {
@@ -97,12 +107,14 @@ const Home = () => {
       setIsAlertSelect(true);
       return;
     }
+
+    const selectedMethod = paymentMethods.find((method) => method.selected)?.method ?? "cash";
+
     createSale
       .mutateAsync({
         customer: selectedCustomerId,
-
-        payment_method:
-          paymentMethods.find((method) => method.selected)?.method ?? "cash",
+        payment_method: selectedMethod,
+        hybrid_payments: selectedMethod === "hybrid" ? hybridPayments : undefined,
         total_amount: 0,
         items: products.map((product) => ({
           product_id: product.id,
@@ -127,12 +139,13 @@ const Home = () => {
       return;
     }
 
+    const selectedMethod = paymentMethods.find((method) => method.selected)?.method ?? "cash";
+
     createSale
       .mutateAsync({
         new_customer: customerData,
-
-        payment_method:
-          paymentMethods.find((method) => method.selected)?.method ?? "cash",
+        payment_method: selectedMethod,
+        hybrid_payments: selectedMethod === "hybrid" ? hybridPayments : undefined,
         // total_amount: 0,
         items: products.map((product) => ({
           product_id: product.id,
@@ -158,10 +171,12 @@ const Home = () => {
       return;
     }
 
+    const selectedMethod = paymentMethods.find((method) => method.selected)?.method ?? "cash";
+
     createSale
       .mutateAsync({
-        payment_method:
-          paymentMethods.find((method) => method.selected)?.method ?? "cash",
+        payment_method: selectedMethod,
+        hybrid_payments: selectedMethod === "hybrid" ? hybridPayments : undefined,
         total_amount: 0,
         items: products.map((product) => ({
           product_id: product.id,
@@ -179,6 +194,18 @@ const Home = () => {
   };
 
   function handleSubmit() {
+    const selectedMethod = paymentMethods.find((method) => method.selected)?.method;
+
+    // If hybrid payment is selected, open modal first
+    if (selectedMethod === "hybrid") {
+      if (products.length === 0) {
+        setIsAlertSelect(true);
+        return;
+      }
+      setIsHybridModalOpen(true);
+      return;
+    }
+
     if (selectedCustomerId) {
       handleDataById();
       return;
@@ -190,6 +217,21 @@ const Home = () => {
 
     handleBaseData();
   }
+
+  const handleHybridConfirm = (payments: PaymentPart[]) => {
+    setHybridPayments(payments);
+
+    // Execute payment after setting hybrid payments
+    setTimeout(() => {
+      if (selectedCustomerId) {
+        handleDataById();
+      } else if (customerData.full_name && customerData.phone) {
+        handleData();
+      } else {
+        handleBaseData();
+      }
+    }, 100);
+  };
 
   const handleDeleteProduct = useCallback((id: number) => {
     setProducts((prev) => prev.filter((product) => product.id !== id));
@@ -539,6 +581,9 @@ const Home = () => {
                     {item.method === "cash" && (
                       <CashIcon selected={item.selected} />
                     )}
+                    {item.method === "hybrid" && (
+                      <HybridIcon selected={item.selected} />
+                    )}
                     <p>{item.label}</p>
                   </li>
                 )
@@ -554,17 +599,24 @@ const Home = () => {
         </span>
       </div>
 
+      <HybridPaymentModal
+        isOpen={isHybridModalOpen}
+        onClose={() => setIsHybridModalOpen(false)}
+        totalAmount={totalAmount}
+        onConfirm={handleHybridConfirm}
+      />
+
       <CreateModal
         headTitle="Diqqat!"
         onClose={() => setIsAlertSelect(false)}
         isOpen={isAlertSelect}
         width={768}
         height={274}
-        btnTitle="Xo’p"
+        btnTitle="Xo'p"
         btnOnClick={() => setIsAlertSelect(false)}
       >
         <p className={styles.alert__title}>
-          Avval kassaga mahsulot qo‘shing, shundan so‘ng bu amalni bajarishingiz
+          Avval kassaga mahsulot qo'shing, shundan so'ng bu amalni bajarishingiz
           mumkin.
         </p>
       </CreateModal>

@@ -35,6 +35,13 @@ const initialState: AppSettingsState = {
           method: "cash",
           label: "Naqd pul",
         },
+        {
+          id: 4,
+          selected: false,
+          status: true,
+          method: "hybrid",
+          label: "Gibrid",
+        },
       ],
 };
 

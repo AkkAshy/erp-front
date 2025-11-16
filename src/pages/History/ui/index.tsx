@@ -16,7 +16,8 @@ const paymentMethods: Record<string, string> = {
   cash: "Naqd pul",
   debt: "Qarz",
   card: "Karta",
-  transfer: "O’tkazma",
+  transfer: "O'tkazma",
+  hybrid: "Gibrid",
 };
 
 const headCols = [
